@@ -1,0 +1,68 @@
+name: Update Subdomains (Cloudflare)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  update-dns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate JSON shape and entries
+        run: |
+          set -euo pipefail
+          jq -e 'type=="object"' subdomains.json || (echo "subdomains.json must be an object" && exit 1)
+          # Validate each entry
+          cat subdomains.json | jq -r 'to_entries[] | "\(.key) \(.value.type) \(.value.target)"' | while read name type target; do
+            if ! echo "$name" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'; then
+              echo "Invalid subdomain name: $name" && exit 1
+            fi
+            if [[ "$type" != "CNAME" && "$type" != "A" ]]; then
+              echo "Invalid type for $name: $type (only CNAME or A allowed)" && exit 1
+            fi
+            if [[ -z "$target" ]]; then
+              echo "Empty target for $name" && exit 1
+            fi
+          done
+
+      - name: Create or update DNS records in Cloudflare
+        env:
+          ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ROOT: ${{ secrets.ROOT_DOMAIN }}
+        run: |
+          set -euo pipefail
+          cat subdomains.json | jq -c 'to_entries[]' | while read -r entry; do
+            NAME=$(echo "$entry" | jq -r '.key')
+            TYPE=$(echo "$entry" | jq -r '.value.type')
+            TARGET=$(echo "$entry" | jq -r '.value.target')
+            FQDN="${NAME}.${ROOT}"
+
+            echo "::notice ::Processing $FQDN -> $TARGET ($TYPE)"
+
+            EXISTING=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?type=${TYPE}&name=${FQDN}" \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -H "Content-Type: application/json")
+
+            REC_ID=$(echo "$EXISTING" | jq -r '.result[0].id // empty')
+
+            PAYLOAD=$(jq -n --arg t "$TYPE" --arg n "$FQDN" --arg c "$TARGET" '{"type":$t,"name":$n,"content":$c,"ttl":3600,"proxied":false}')
+
+            if [ -z "$REC_ID" ]; then
+              echo "Creating $FQDN"
+              curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" \
+                -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
+                --data "$PAYLOAD" | jq -r '.success, .errors'
+            else
+              echo "Updating $FQDN (record id $REC_ID)"
+              curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${REC_ID}" \
+                -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" \
+                --data "$PAYLOAD" | jq -r '.success, .errors'
+            fi
+          done
