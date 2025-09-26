@@ -1,0 +1,26 @@
+name: Handle subdomain request
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  create-subdomain:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'subdomain-request') || github.event.action == 'opened'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Validate and process issue
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: "estin.pro"
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          npm install node-fetch@2
+          node .github/scripts/process-issue.js
