@@ -1,5 +1,5 @@
 {
   "rami": { "type": "CNAME", "target": "a411dad6b27c1586.vercel-dns-017.com" },
   "test": { "type": "CNAME", "target": "cname.vercel-dns.com" },
-  "@_vercel": { "type": "TXT", "target": "vc-domain-verify=test.estin.pro,eb7cd33c3b3aaf63ec46" }
+  "_vercel": { "type": "TXT", "target": "vc-domain-verify=test.estin.pro,eb7cd33c3b3aaf63ec46" }
 }
