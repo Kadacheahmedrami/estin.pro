@@ -6,7 +6,11 @@
   "lamari": { "type": "CNAME", "target": "8993646fba5bcc00.vercel-dns-017.com"},
   
   "_vercel": { "type": "TXT", "target": "vc-domain-verify=lamari.estin.pro,5b94ba9f13b4bb76c507"},
-    "djihad": { "type": "CNAME", "target": "djihad-protofolio.onrender.com"}
+    "djihad": { "type": "CNAME", "target": "djihad-protofolio.onrender.com"},
+
+    "_vercel": { "type": "TXT", "target": "vc-domain-verify=projet-gl.estin.pro,6d7c154408c323b1dc33"},
+    "projet-gl": { "type": "CNAME", "target": "032f33304c1f7d78.vercel-dns-017.com"}
+
 
   
 }
