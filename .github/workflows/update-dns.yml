@@ -3,6 +3,8 @@ name: Update Subdomains (Cloudflare)
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   update-dns:
