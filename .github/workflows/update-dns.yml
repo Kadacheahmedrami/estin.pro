@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  update-dns:
+  validate-json:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -20,7 +21,6 @@ jobs:
         run: |
           set -euo pipefail
           jq -e 'type=="object"' subdomains.json || (echo "subdomains.json must be an object" && exit 1)
-          # Validate each entry
           cat subdomains.json | jq -r 'to_entries[] | "\(.key) \(.value.type) \(.value.target)"' | while read name type target; do
             if [[ "$name" != "_vercel" ]]; then
               if ! echo "$name" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'; then
@@ -34,6 +34,16 @@ jobs:
               echo "Empty target for $name" && exit 1
             fi
           done
+
+  update-dns:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Create or update DNS records in Cloudflare
         env:
