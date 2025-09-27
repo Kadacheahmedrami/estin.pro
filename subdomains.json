@@ -14,10 +14,8 @@
 
   "_vercel": { "type": "TXT", "target": "vc-domain-verify=projet-gl.estin.pro,6d7c154408c323b1dc33"},
   "projet-gl": { "type": "CNAME", "target": "032f33304c1f7d78.vercel-dns-017.com"},
-  
-  "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com"},
+
+  "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com"}
   
 
-
-  
 }
