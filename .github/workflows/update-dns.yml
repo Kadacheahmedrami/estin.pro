@@ -20,11 +20,13 @@ jobs:
           jq -e 'type=="object"' subdomains.json || (echo "subdomains.json must be an object" && exit 1)
           # Validate each entry
           cat subdomains.json | jq -r 'to_entries[] | "\(.key) \(.value.type) \(.value.target)"' | while read name type target; do
-            if ! echo "$name" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'; then
-              echo "Invalid subdomain name: $name" && exit 1
+            if [[ "$name" != "_vercel" ]]; then
+              if ! echo "$name" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'; then
+                echo "Invalid subdomain name: $name" && exit 1
+              fi
             fi
-            if [[ "$type" != "CNAME" && "$type" != "A" ]]; then
-              echo "Invalid type for $name: $type (only CNAME or A allowed)" && exit 1
+            if [[ "$type" != "CNAME" && "$type" != "A" && "$type" != "TXT" ]]; then
+              echo "Invalid type for $name: $type (only CNAME, A, or TXT allowed)" && exit 1
             fi
             if [[ -z "$target" ]]; then
               echo "Empty target for $name" && exit 1
@@ -42,7 +44,12 @@ jobs:
             NAME=$(echo "$entry" | jq -r '.key')
             TYPE=$(echo "$entry" | jq -r '.value.type')
             TARGET=$(echo "$entry" | jq -r '.value.target')
-            FQDN="${NAME}.${ROOT}"
+
+            if [[ "$NAME" == "_vercel" ]]; then
+              FQDN="_vercel.${ROOT}"
+            else
+              FQDN="${NAME}.${ROOT}"
+            fi
 
             echo "::notice ::Processing $FQDN -> $TARGET ($TYPE)"
 
