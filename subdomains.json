@@ -2,8 +2,6 @@
   "rami": { "type": "CNAME", "target": "a411dad6b27c1586.vercel-dns-017.com" },
   "test": { "type": "CNAME", "target": "3b0f5e259ec7e71d.vercel-dns-017.com" },
   
-  "blog": { "type": "CNAME", "target": "90a0bcd6a66c85b9.vercel-dns-017.com"},
-  "_vercel": {"type": "TXT", "target": "vc-domain-verify=blog.estin.pro,2a74f5f0904025bfa4f8"},
   
   "_vercel": { "type": "TXT", "target": "vc-domain-verify=test.estin.pro,eb7cd33c3b3aaf63ec46" },
   
@@ -15,7 +13,9 @@
   "_vercel": { "type": "TXT", "target": "vc-domain-verify=projet-gl.estin.pro,6d7c154408c323b1dc33"},
   "projet-gl": { "type": "CNAME", "target": "032f33304c1f7d78.vercel-dns-017.com"},
 
-  "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com"}
+  "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com"},
   
+  "blog": { "type": "CNAME", "target": "90a0bcd6a66c85b9.vercel-dns-017.com"},
+  "_vercel": {"type": "TXT", "target": "vc-domain-verify=blog.estin.pro,2a74f5f0904025bfa4f8"},
 
 }
