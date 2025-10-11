@@ -20,5 +20,5 @@
 
 
    "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com"},
-  "zianitakieddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }
+  "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }
 }
