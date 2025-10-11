@@ -19,6 +19,6 @@
   "_vercel": {"type": "TXT", "target": "vc-domain-verify=blog.estin.pro,2a74f5f0904025bfa4f8"},
 
 
-   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com"}
-
+   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com"},
+  "zianitakieddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }
 }
