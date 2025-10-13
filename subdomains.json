@@ -7,32 +7,14 @@
   "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com" },
   "blog": { "type": "CNAME", "target": "90a0bcd6a66c85b9.vercel-dns-017.com" },
   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com" },
-  "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" },
-  
+  "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" },  
   "_2e90ef2701f64ed79b934fa31e155a3d": {
     "type": "CNAME",
     "target": "_b3eed47db2337e3050f6ee07fda0ca10.xlfgrmvvlj.acm-validations.aws."
   },
-  
   "ruya": {
     "type": "CNAME",
     "target": "d3dj7yv5k2tjku.cloudfront.net"
   },
 
-  "_vercel_test": {
-    "type": "TXT",
-    "target": "vc-domain-verify=test.estin.pro,eb7cd33c3b3aaf63ec46"
-  },
-  "_vercel_lamari": {
-    "type": "TXT",
-    "target": "vc-domain-verify=lamari.estin.pro,5b94ba9f13b4bb76c507"
-  },
-  "_vercel_projet-gl": {
-    "type": "TXT",
-    "target": "vc-domain-verify=projet-gl.estin.pro,6d7c154408c323b1dc33"
-  },
-  "_vercel_blog": {
-    "type": "TXT",
-    "target": "vc-domain-verify=blog.estin.pro,2a74f5f0904025bfa4f8"
-  }
 }
