@@ -22,6 +22,14 @@
    "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com"},
   "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" },
 
-  "ruya": { "type": "CNAME", "target": "main.d27z35w67eperw.amplifyapp.com" }
+   "_2e90ef2701f64ed79b934fa31e155a3d": {
+    "type": "CNAME",
+    "target": "_b3eed47db2337e3050f6ee07fda0ca10.xlfgrmvvlj.acm-validations.aws."
+  },
+  
+  "ruya": {
+    "type": "CNAME",
+    "target": "d3dj7yv5k2tjku.cloudfront.net"
+  }
 
 }
