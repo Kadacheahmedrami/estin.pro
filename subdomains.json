@@ -11,6 +11,12 @@
   "ruya": {
     "type": "CNAME",
     "target": "d3dj7yv5k2tjku.cloudfront.net"
+  },
+    "n8n": {
+    "type": "A",
+    "target": "35.193.52.208"
   }
+
+  
 
 }
