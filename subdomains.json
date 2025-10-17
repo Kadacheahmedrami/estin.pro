@@ -16,7 +16,9 @@
     "n8n": {
     "type": "A",
     "target": "35.193.52.208"
-  }
+  }, 
+  "nxr.dine": { "type": "CNAME", "target": "d192dca016bd4a2f.vercel-dns-017.com." },
+  "_vercel": { "type": "_TXT", "target": "vc-domain-verify=nxr.dine.estin.pro,5e37072ef8399cdca294" }
 
   
 
