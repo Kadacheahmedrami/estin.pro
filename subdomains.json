@@ -16,7 +16,8 @@
     "n8n": {
     "type": "A",
     "target": "35.193.52.208"
-  }
+  }, 
+  "nxr.dine": { "type": "CNAME", "target": "d192dca016bd4a2f.vercel-dns-017.com." },
 
   
 
