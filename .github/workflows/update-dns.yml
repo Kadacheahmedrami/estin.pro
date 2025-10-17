@@ -23,19 +23,9 @@ jobs:
           
           # Validate root structure
           jq -e 'type=="object"' subdomains.json || (echo "subdomains.json must be an object" && exit 1)
-          jq -e 'has("provider")' subdomains.json || (echo "Missing 'provider' field" && exit 1)
-          jq -e 'has("records")' subdomains.json || (echo "Missing 'records' field" && exit 1)
-          
-          # Validate provider
-          PROVIDER=$(jq -r '.provider' subdomains.json)
-          if [[ ! "$PROVIDER" =~ ^(cloudflare|route53|gcloud|azure|digitalocean)$ ]]; then
-            echo "Invalid provider: $PROVIDER (must be cloudflare, route53, gcloud, azure, or digitalocean)" && exit 1
-          fi
           
           # Validate records
-          jq -e '.records | type=="object"' subdomains.json || (echo "records must be an object" && exit 1)
-          
-          cat subdomains.json | jq -r '.records | to_entries[] | "\(.key) \(.value.type) \(.value.target) \(.value.ttl // 3600)"' | while read name type target ttl; do
+          cat subdomains.json | jq -r 'to_entries[] | "\(.key) \(.value.type) \(.value.target) \(.value.ttl // 3600) \(.value.proxied // false)"' | while read name type target ttl proxied; do
             # Validate subdomain name (allow special prefixes like _vercel, _dnsauth, etc)
             if [[ ! "$name" =~ ^(_[a-z0-9-]+|[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)$ ]]; then
               echo "Invalid subdomain name: $name" && exit 1
@@ -55,6 +45,11 @@ jobs:
             if ! [[ "$ttl" =~ ^[0-9]+$ ]] || [ "$ttl" -lt 60 ] || [ "$ttl" -gt 86400 ]; then
               echo "Invalid TTL for $name: $ttl (must be between 60 and 86400)" && exit 1
             fi
+            
+            # Validate proxied (boolean)
+            if [[ "$proxied" != "true" && "$proxied" != "false" ]]; then
+              echo "Invalid proxied value for $name: $proxied (must be true or false)" && exit 1
+            fi
           done
           
           echo "✅ Validation passed"
@@ -62,6 +57,9 @@ jobs:
   update-dns:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    env:
+      # Set your DNS provider here: cloudflare, route53, gcloud, azure, or digitalocean
+      DNS_PROVIDER: cloudflare
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -72,7 +70,7 @@ jobs:
           sudo apt-get install -y jq curl
       
       - name: Setup AWS CLI (if Route53)
-        if: contains(fromJSON('["route53"]'), fromJSON(format('["{0}"]', github.event.repository.default_branch)))
+        if: env.DNS_PROVIDER == 'route53'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -80,20 +78,19 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
       
       - name: Setup Google Cloud SDK (if GCloud)
-        if: contains(fromJSON('["gcloud"]'), fromJSON(format('["{0}"]', github.event.repository.default_branch)))
+        if: env.DNS_PROVIDER == 'gcloud'
         uses: google-github-actions/setup-gcloud@v2
         with:
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
       
       - name: Setup Azure CLI (if Azure)
-        if: contains(fromJSON('["azure"]'), fromJSON(format('["{0}"]', github.event.repository.default_branch)))
+        if: env.DNS_PROVIDER == 'azure'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
-      - name: Update DNS Records - Cloudflare
-        if: success()
+      - name: Update DNS Records
         env:
           ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN }}
           # Cloudflare
@@ -111,14 +108,18 @@ jobs:
         run: |
           set -euo pipefail
           
-          PROVIDER=$(jq -r '.provider' subdomains.json)
-          echo "::notice ::Using DNS provider: $PROVIDER"
+          echo "::notice ::Using DNS provider: $DNS_PROVIDER"
           
           # Function to update Cloudflare DNS
           update_cloudflare() {
-            local NAME=$1 TYPE=$2 TARGET=$3 TTL=$4 PROXIED=${5:-false}
-            local FQDN="${NAME}.${ROOT_DOMAIN}"
-            [[ "$NAME" =~ ^_ ]] && FQDN="${NAME}.${ROOT_DOMAIN}"
+            local NAME=$1 TYPE=$2 TARGET=$3 TTL=$4 PROXIED=$5
+            local FQDN
+            
+            if [[ "$NAME" =~ ^_ ]]; then
+              FQDN="${NAME}.${ROOT_DOMAIN}"
+            else
+              FQDN="${NAME}.${ROOT_DOMAIN}"
+            fi
             
             echo "::notice ::Processing $FQDN -> $TARGET ($TYPE)"
             
@@ -127,19 +128,32 @@ jobs:
               -H "Content-Type: application/json")
             
             REC_ID=$(echo "$EXISTING" | jq -r '.result[0].id // empty')
-            PAYLOAD=$(jq -n --arg t "$TYPE" --arg n "$FQDN" --arg c "$TARGET" --argjson ttl "$TTL" --argjson p "$PROXIED" \
+            
+            # Remove trailing dot from target if present (Cloudflare handles this)
+            TARGET="${TARGET%.}"
+            
+            PAYLOAD=$(jq -n \
+              --arg t "$TYPE" \
+              --arg n "$FQDN" \
+              --arg c "$TARGET" \
+              --argjson ttl "$TTL" \
+              --argjson p "$PROXIED" \
               '{"type":$t,"name":$n,"content":$c,"ttl":$ttl,"proxied":$p}')
             
             if [ -z "$REC_ID" ]; then
               echo "Creating $FQDN"
-              curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
-                -H "Authorization: Bearer ${CF_TOKEN}" -H "Content-Type: application/json" \
-                --data "$PAYLOAD" | jq -r 'if .success then "✅ Created" else ("❌ Error: " + (.errors | tostring)) end'
+              RESULT=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
+                -H "Authorization: Bearer ${CF_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$PAYLOAD")
+              echo "$RESULT" | jq -r 'if .success then "✅ Created successfully" else ("❌ Error: " + (.errors | map(.message) | join(", "))) end'
             else
               echo "Updating $FQDN (ID: $REC_ID)"
-              curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records/${REC_ID}" \
-                -H "Authorization: Bearer ${CF_TOKEN}" -H "Content-Type: application/json" \
-                --data "$PAYLOAD" | jq -r 'if .success then "✅ Updated" else ("❌ Error: " + (.errors | tostring)) end'
+              RESULT=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records/${REC_ID}" \
+                -H "Authorization: Bearer ${CF_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$PAYLOAD")
+              echo "$RESULT" | jq -r 'if .success then "✅ Updated successfully" else ("❌ Error: " + (.errors | map(.message) | join(", "))) end'
             fi
           }
           
@@ -147,30 +161,54 @@ jobs:
           update_route53() {
             local NAME=$1 TYPE=$2 TARGET=$3 TTL=$4
             local FQDN="${NAME}.${ROOT_DOMAIN}."
-            [[ "$NAME" =~ ^_ ]] && FQDN="${NAME}.${ROOT_DOMAIN}."
             
             echo "::notice ::Processing $FQDN -> $TARGET ($TYPE)"
             
-            CHANGE_BATCH=$(jq -n --arg fqdn "$FQDN" --arg type "$TYPE" --arg target "$TARGET" --argjson ttl "$TTL" \
+            # Ensure target has trailing dot for CNAME records
+            if [[ "$TYPE" == "CNAME" && ! "$TARGET" =~ \.$ ]]; then
+              TARGET="${TARGET}."
+            fi
+            
+            CHANGE_BATCH=$(jq -n \
+              --arg fqdn "$FQDN" \
+              --arg type "$TYPE" \
+              --arg target "$TARGET" \
+              --argjson ttl "$TTL" \
               '{Changes:[{Action:"UPSERT",ResourceRecordSet:{Name:$fqdn,Type:$type,TTL:$ttl,ResourceRecords:[{Value:$target}]}}]}')
             
-            aws route53 change-resource-record-sets \
+            RESULT=$(aws route53 change-resource-record-sets \
               --hosted-zone-id "$R53_ZONE_ID" \
               --change-batch "$CHANGE_BATCH" \
-              --output json | jq -r 'if .ChangeInfo.Status then "✅ \(.ChangeInfo.Status)" else "❌ Error" end'
+              --output json 2>&1)
+            
+            if echo "$RESULT" | jq -e '.ChangeInfo.Status' > /dev/null 2>&1; then
+              echo "✅ $(echo "$RESULT" | jq -r '.ChangeInfo.Status')"
+            else
+              echo "❌ Error: $RESULT"
+            fi
           }
           
           # Function to update Google Cloud DNS
           update_gcloud() {
             local NAME=$1 TYPE=$2 TARGET=$3 TTL=$4
             local FQDN="${NAME}.${ROOT_DOMAIN}."
-            [[ "$NAME" =~ ^_ ]] && FQDN="${NAME}.${ROOT_DOMAIN}."
             
             echo "::notice ::Processing $FQDN -> $TARGET ($TYPE)"
             
+            # Ensure target has trailing dot for CNAME records
+            if [[ "$TYPE" == "CNAME" && ! "$TARGET" =~ \.$ ]]; then
+              TARGET="${TARGET}."
+            fi
+            
+            # Delete existing record (ignore errors if doesn't exist)
             gcloud dns record-sets delete "$FQDN" --type="$TYPE" --zone="$GCP_ZONE" --quiet 2>/dev/null || true
-            gcloud dns record-sets create "$FQDN" --type="$TYPE" --ttl="$TTL" --rrdatas="$TARGET" --zone="$GCP_ZONE" \
-              && echo "✅ Created/Updated" || echo "❌ Error"
+            
+            # Create new record
+            if gcloud dns record-sets create "$FQDN" --type="$TYPE" --ttl="$TTL" --rrdatas="$TARGET" --zone="$GCP_ZONE" 2>&1; then
+              echo "✅ Created/Updated successfully"
+            else
+              echo "❌ Error creating record"
+            fi
           }
           
           # Function to update Azure DNS
@@ -179,24 +217,38 @@ jobs:
             
             echo "::notice ::Processing ${NAME}.${ROOT_DOMAIN} -> $TARGET ($TYPE)"
             
+            # Remove trailing dot for Azure
+            TARGET="${TARGET%.}"
+            
             case "$TYPE" in
               A)
-                az network dns record-set a add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -a "$TARGET" --ttl "$TTL" 2>/dev/null \
-                  || az network dns record-set a create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL" \
-                  && az network dns record-set a add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -a "$TARGET"
+                az network dns record-set a delete -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --yes 2>/dev/null || true
+                az network dns record-set a create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL"
+                az network dns record-set a add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -a "$TARGET"
+                ;;
+              AAAA)
+                az network dns record-set aaaa delete -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --yes 2>/dev/null || true
+                az network dns record-set aaaa create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL"
+                az network dns record-set aaaa add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -a "$TARGET"
                 ;;
               CNAME)
-                az network dns record-set cname set-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -c "$TARGET" --ttl "$TTL" 2>/dev/null \
-                  || az network dns record-set cname create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL" \
-                  && az network dns record-set cname set-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -c "$TARGET"
+                az network dns record-set cname delete -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --yes 2>/dev/null || true
+                az network dns record-set cname create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL"
+                az network dns record-set cname set-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -c "$TARGET"
                 ;;
               TXT)
-                az network dns record-set txt add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -v "$TARGET" --ttl "$TTL" 2>/dev/null \
-                  || az network dns record-set txt create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL" \
-                  && az network dns record-set txt add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -v "$TARGET"
+                az network dns record-set txt delete -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --yes 2>/dev/null || true
+                az network dns record-set txt create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL"
+                az network dns record-set txt add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -v "$TARGET"
+                ;;
+              MX)
+                az network dns record-set mx delete -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --yes 2>/dev/null || true
+                az network dns record-set mx create -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" --ttl "$TTL"
+                # For MX records, you'd need to parse priority from target
+                az network dns record-set mx add-record -g "$AZURE_RG" -z "$AZURE_ZONE" -n "$NAME" -e "$TARGET" -p 10
                 ;;
             esac
-            echo "✅ Created/Updated"
+            echo "✅ Created/Updated successfully"
           }
           
           # Function to update DigitalOcean DNS
@@ -205,35 +257,46 @@ jobs:
             
             echo "::notice ::Processing ${NAME}.${ROOT_DOMAIN} -> $TARGET ($TYPE)"
             
+            # Remove trailing dot
+            TARGET="${TARGET%.}"
+            
             EXISTING=$(curl -s -X GET "https://api.digitalocean.com/v2/domains/${ROOT_DOMAIN}/records" \
               -H "Authorization: Bearer ${DO_TOKEN}" \
               -H "Content-Type: application/json" | jq -r ".domain_records[] | select(.name==\"$NAME\" and .type==\"$TYPE\") | .id")
             
-            PAYLOAD=$(jq -n --arg t "$TYPE" --arg n "$NAME" --arg d "$TARGET" --argjson ttl "$TTL" \
+            PAYLOAD=$(jq -n \
+              --arg t "$TYPE" \
+              --arg n "$NAME" \
+              --arg d "$TARGET" \
+              --argjson ttl "$TTL" \
               '{"type":$t,"name":$n,"data":$d,"ttl":$ttl}')
             
             if [ -z "$EXISTING" ]; then
               echo "Creating $NAME"
-              curl -s -X POST "https://api.digitalocean.com/v2/domains/${ROOT_DOMAIN}/records" \
-                -H "Authorization: Bearer ${DO_TOKEN}" -H "Content-Type: application/json" \
-                --data "$PAYLOAD" | jq -r 'if .domain_record then "✅ Created" else ("❌ Error: " + (.message // "unknown")) end'
+              RESULT=$(curl -s -X POST "https://api.digitalocean.com/v2/domains/${ROOT_DOMAIN}/records" \
+                -H "Authorization: Bearer ${DO_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$PAYLOAD")
+              echo "$RESULT" | jq -r 'if .domain_record then "✅ Created successfully" else ("❌ Error: " + (.message // "unknown error")) end'
             else
               echo "Updating $NAME (ID: $EXISTING)"
-              curl -s -X PUT "https://api.digitalocean.com/v2/domains/${ROOT_DOMAIN}/records/${EXISTING}" \
-                -H "Authorization: Bearer ${DO_TOKEN}" -H "Content-Type: application/json" \
-                --data "$PAYLOAD" | jq -r 'if .domain_record then "✅ Updated" else ("❌ Error: " + (.message // "unknown")) end'
+              RESULT=$(curl -s -X PUT "https://api.digitalocean.com/v2/domains/${ROOT_DOMAIN}/records/${EXISTING}" \
+                -H "Authorization: Bearer ${DO_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "$PAYLOAD")
+              echo "$RESULT" | jq -r 'if .domain_record then "✅ Updated successfully" else ("❌ Error: " + (.message // "unknown error")) end'
             fi
           }
           
           # Process all records
-          jq -c '.records | to_entries[]' subdomains.json | while read -r entry; do
+          jq -c 'to_entries[]' subdomains.json | while read -r entry; do
             NAME=$(echo "$entry" | jq -r '.key')
             TYPE=$(echo "$entry" | jq -r '.value.type')
             TARGET=$(echo "$entry" | jq -r '.value.target')
             TTL=$(echo "$entry" | jq -r '.value.ttl // 3600')
             PROXIED=$(echo "$entry" | jq -r '.value.proxied // false')
             
-            case "$PROVIDER" in
+            case "$DNS_PROVIDER" in
               cloudflare)
                 update_cloudflare "$NAME" "$TYPE" "$TARGET" "$TTL" "$PROXIED"
                 ;;
@@ -249,7 +312,13 @@ jobs:
               digitalocean)
                 update_digitalocean "$NAME" "$TYPE" "$TARGET" "$TTL"
                 ;;
+              *)
+                echo "❌ Unknown DNS provider: $DNS_PROVIDER"
+                exit 1
+                ;;
             esac
+            
+            echo ""  # Empty line between records
           done
           
-          echo "::notice ::✅ All DNS records processed"
+          echo "::notice ::✅ All DNS records processed successfully"
