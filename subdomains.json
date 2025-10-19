@@ -19,8 +19,11 @@
   }, 
   "nxr-dine": { "type": "CNAME", "target": "d192dca016bd4a2f.vercel-dns-017.com." },
     "gephyra": { "type": "CNAME", "target": "0432f406f545eb11.vercel-dns-017.com." },
-  "_vercel": { "type": "TXT", "target": "vc-domain-verify=gephyra.estin.pro,753bdda7c074e27a3cf6" }
+  "_vercel": { "type": "TXT", "target": "vc-domain-verify=gephyra.estin.pro,753bdda7c074e27a3cf6" },
+     "wordpress": {
+    "type": "A",
+    "target": "35.193.52.208"
+  },
 
-  
 
 }
