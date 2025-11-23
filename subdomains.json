@@ -25,7 +25,8 @@
     "target": "35.193.52.208"
   },
      "gephyra-api": { "type": "CNAME", "target": "efdba3b35614bb06.vercel-dns-017.com." },
-  "_vercel": { "type": "TXT", "target": "vc-domain-verify=gephyra-api.estin.pro,8a0630b7c469f2743d8f" }
+  "_vercel": { "type": "TXT", "target": "vc-domain-verify=gephyra-api.estin.pro,8a0630b7c469f2743d8f" },
+  "rivo": {"type": "CNAME", "target": "rivo-boor.onrender.com"}
 
 
 }
