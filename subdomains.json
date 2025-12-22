@@ -9,28 +9,14 @@
   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com" },
   "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }, 
   "ride": { "type": "CNAME", "target": "4bc1a00c46c5c9a2.vercel-dns-017.com." },
-  "khatamat-api" :{"type":"A", "target":"212.227.85.58"},
-  "ruya": {
-    "type": "CNAME",
-    "target": "d3dj7yv5k2tjku.cloudfront.net"
-  },
-    "n8n": {
-    "type": "A",
-    "target": "35.193.52.208"
-  }, 
+  "_vercel": { "type": "TXT", "target": "vc-domain-verify=ride.estin.pro,bbd97d62dc755baabd05" },
+  "khatamat-api": { "type":"A", "target":"212.227.85.58" },
+  "ruya": { "type": "CNAME", "target": "d3dj7yv5k2tjku.cloudfront.net" },
+  "n8n": { "type": "A", "target": "35.193.52.208" }, 
   "nxr-dine": { "type": "CNAME", "target": "d192dca016bd4a2f.vercel-dns-017.com." },
-    "gephyra": { "type": "CNAME", "target": "0432f406f545eb11.vercel-dns-017.com." },
- 
-     "wordpress": {
-    "type": "A",
-    "target": "35.193.52.208"
-  },
-     "gephyra-api": { "type": "CNAME", "target": "efdba3b35614bb06.vercel-dns-017.com." },
-  "rivo": {"type": "CNAME", "target": "rivo-boor.onrender.com"},
-      "omnius": { "type": "CNAME", "target": "6369b7521aa2ac9b.vercel-dns-017.com." }
- 
-  
-  
-
-
+  "gephyra": { "type": "CNAME", "target": "0432f406f545eb11.vercel-dns-017.com." },
+  "wordpress": { "type": "A", "target": "35.193.52.208" },
+  "gephyra-api": { "type": "CNAME", "target": "efdba3b35614bb06.vercel-dns-017.com." },
+  "rivo": { "type": "CNAME", "target": "rivo-boor.onrender.com" },
+  "omnius": { "type": "CNAME", "target": "6369b7521aa2ac9b.vercel-dns-017.com." }
 }
