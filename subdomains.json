@@ -18,5 +18,7 @@
   "wordpress": { "type": "A", "target": "35.193.52.208" },
   "gephyra-api": { "type": "CNAME", "target": "efdba3b35614bb06.vercel-dns-017.com." },
   "rivo": { "type": "CNAME", "target": "rivo-boor.onrender.com" },
-  "omnius": { "type": "CNAME", "target": "6369b7521aa2ac9b.vercel-dns-017.com." }
+  "omnius": { "type": "CNAME", "target": "6369b7521aa2ac9b.vercel-dns-017.com." },
+  "projet-fds": { "type": "CNAME", "target": "116f0ae81117d031.vercel-dns-017.com." }
+  
 }
