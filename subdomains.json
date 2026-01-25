@@ -9,7 +9,6 @@
   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com" },
   "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }, 
   "ride": { "type": "CNAME", "target": "4bc1a00c46c5c9a2.vercel-dns-017.com." },
-  "_vercel": { "type": "TXT", "target": "vc-domain-verify=ride.estin.pro,bbd97d62dc755baabd05" },
   "khatamat-api": { "type":"A", "target":"212.227.85.58" },
   "ruya": { "type": "CNAME", "target": "d3dj7yv5k2tjku.cloudfront.net" },
   "n8n": { "type": "A", "target": "35.193.52.208" }, 
