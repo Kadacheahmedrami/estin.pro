@@ -21,6 +21,7 @@
   "projet-fds": { "type": "CNAME", "target": "116f0ae81117d031.vercel-dns-017.com." },
   "qcm": { "type": "CNAME", "target": "f666f0f992d4663d.vercel-dns-017.com." },
   "dz-rent-it": { "type": "CNAME", "target": "b1940299c45a1146.vercel-dns-017.com." },
-  "_vercel": { "type": "TXT", "target": "vc-domain-verify=dz-rent-it.estin.pro,dae6ff3c0a53a76d948f" }
+  "_vercel": { "type": "TXT", "target": "vc-domain-verify=dz-rent-it.estin.pro,dae6ff3c0a53a76d948f" },
+  "dz-rent-it-back": { "type": "CNAME", "target": "mo7-gl-project.onrender.com" },
   
 }
