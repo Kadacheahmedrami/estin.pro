@@ -10,6 +10,7 @@
   "ziani-taki-eddine": { "type": "CNAME", "target": "portfolio-lsl4.onrender.com" }, 
   "ride": { "type": "CNAME", "target": "4bc1a00c46c5c9a2.vercel-dns-017.com." },
   "khatamat-api": { "type":"A", "target":"212.227.85.58" },
+  "kh-api": { "type":"A", "target":"159.69.149.148" },
   "ruya": { "type": "CNAME", "target": "d3dj7yv5k2tjku.cloudfront.net" },
   "n8n": { "type": "A", "target": "35.193.52.208" }, 
   "nxr-dine": { "type": "CNAME", "target": "d192dca016bd4a2f.vercel-dns-017.com." },
