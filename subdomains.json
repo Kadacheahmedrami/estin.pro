@@ -5,7 +5,7 @@
   "djihad": { "type": "CNAME", "target": "djihad-protofolio.onrender.com" },
   "projet-gl": { "type": "CNAME", "target": "032f33304c1f7d78.vercel-dns-017.com" },
   "bib": { "type": "CNAME", "target": "bb43b047a69217d4.vercel-dns-017.com" },
-  "uni-hunter": { "type": "CNAME", "target": "uni-explorer.vercel.app" },
+  "uni-hunter": { "type": "CNAME", "target": "90fffb91eafdf0fc.vercel-dns-017.com." },
   "uni-hunter-api": {"type": "CNAME", "target": "uni-explorer.l4z3x.top" },
   "blog": { "type": "CNAME", "target": "90a0bcd6a66c85b9.vercel-dns-017.com" },
   "hawiyat": { "type": "CNAME", "target": "07cb49b56cbf7e4f.vercel-dns-017.com" },
