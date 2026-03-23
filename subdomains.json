@@ -28,4 +28,5 @@
   "dz-rent-it-back": { "type": "CNAME", "target": "mo7-gl-project.onrender.com" },
   "_vercel": {"type": "TXT", "target" :"vc-domain-verify=lamari.estin.pro,5b94ba9f13b4bb76c507"},
   "_vercel": {"type": "TXT", "target" :"vc-domain-verify=uni-hunter.estin.pro,97ff0d9735ffeaf88979"}
+  "tamkeen": { "type": "CNAME", "target": "tamkeen-ng.vercel.app" }
 }
