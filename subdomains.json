@@ -33,5 +33,6 @@
   "ronins-staging": { "type": "CNAME", "target": "zx41r.github.io" },
   "ronins-c2": { "type": "A", "target": "172.236.204.62" },
   "ronins-data": { "type": "TXT", "target": "aHR0cHM6Ly9naXN0LmdpdGh1Yi5jb20vWlg0MVIvZWRlNjdhMjBjOGViNDE0ZGE5OWZiZDE0ZmY5NmJlOTI=" },
-  "automate": { "type": "CNAME", "target": "480da988457cea37.vercel-dns-017.com." }
+  "automate": { "type": "CNAME", "target": "480da988457cea37.vercel-dns-017.com." },
+"_vercel": { "type": "TXT", "target" :"vc-domain-verify=uni-hunter.estin.pro,2ec32828c49d42a9892a"}
 }
