@@ -30,6 +30,7 @@
   "_vercel": {"type": "TXT", "target" :"vc-domain-verify=uni-hunter.estin.pro,97ff0d9735ffeaf88979"},
   "tamkeen": { "type": "CNAME", "target": "f01ecd3aaaa756d5.vercel-dns-017.com." },
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=tamkeen.estin.pro,f6dae2f915322f47a2bb"},
-  "tawat": { "type": "CNAME", "target" :"tawat-estin.vercel.app"}
-  
+  "tawat": { "type": "CNAME", "target" :"tawat-estin.vercel.app"},
+  "_vercel-tawat": { "type": "TXT", "target" :"vc-domain-verify=tawat.estin.pro,5eaba97cf9565c660350"},
+  "tawat-back": { "type": "CNAME", "target" :"tawat-back.onrender.com"}
 }
