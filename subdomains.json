@@ -32,6 +32,8 @@
   "quintoweb": { "type": "CNAME", "target": "quintoweb.vercel.app" },
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=tamkeen.estin.pro,f6dae2f915322f47a2bb"},
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=tamkeen.estin.pro,f6dae2f915322f47a2bb"},
+  "vetx": { "type": "CNAME", "target": "b5acdcf6966f098d.vercel-dns-017.com." },
+  "_vercel": { "type": "TXT", "target" :"vc-domain-verify=vetx.estin.pro,21cab0db69b2208a2739"},
   "tawat": { "type": "CNAME", "target" :"fea7d99fb6d52979.vercel-dns-017.com."},
   "tawat-back": { "type": "CNAME", "target" :"tawat-back.onrender.com"},
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=tawat.estin.pro,5eaba97cf9565c660350"}
