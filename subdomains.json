@@ -28,7 +28,7 @@
   "_vercel": {"type": "TXT", "target" :"vc-domain-verify=uni-hunter.estin.pro,97ff0d9735ffeaf88979"},
   "tamkeen": { "type": "CNAME", "target": "f01ecd3aaaa756d5.vercel-dns-017.com." },
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=tamkeen.estin.pro,f6dae2f915322f47a2bb"},
-  "vetx": { "type": "vetx", "target": "b5acdcf6966f098d.vercel-dns-017.com." },
+  "vetx": { "type": "CNAME", "target": "b5acdcf6966f098d.vercel-dns-017.com." },
   "_vercel": { "type": "TXT", "target" :"vc-domain-verify=vetx.estin.pro,21cab0db69b2208a2739"},
   "tawat": { "type": "CNAME", "target" :"fea7d99fb6d52979.vercel-dns-017.com."},
   "tawat-back": { "type": "CNAME", "target" :"tawat-back.onrender.com"},
